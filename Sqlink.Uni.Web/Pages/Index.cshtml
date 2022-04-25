@@ -1,0 +1,58 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<!-- Editable table -->
+<div class="card">
+  <h3 class="card-header text-center font-weight-bold text-uppercase py-2">Available courses</h3>
+  <div class="card-body">
+    <!-- The form that remove buttons will use -->
+    <form id="courseForm" method="post"></form>
+
+    <div id="table" class="table-editable">
+      <span class="table-add float-right mb-3 mr-2">
+        <a href="#!" class="text-success">
+          <i
+            class="fas fa-plus fa-2x" aria-hidden="true"></i></a></span>
+      <table class="table table-bordered table-responsive-md table-striped text-center">
+        <thead>
+        <tr>
+          <th class="text-center">Id</th>
+          <th class="text-center">Name</th>
+          <th class="text-center">Year</th>
+          <th class="text-center">Semester</th>
+          <th class="text-center">mandatory</th>
+          <th class="text-center"> </th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var course in Model.Courses)
+        {
+          <tr  > 
+            <td >@course.Id</td>
+            <td >@course.Name</td>
+            <td >@course.Year</td>
+            <td >@course.Semester</td>
+            <td >@course.IsMandatory</td>
+
+            <td>
+              <span class="table-remove">
+                <button type="submit"
+                        name="id"
+                        value="@course.Id"
+                        form="courseForm"
+                        asp-page-handler="OnCourseAdd"
+                        class="btn btn-danger btn-rounded btn-sm my-0">
+                  Add
+                </button>
+              </span>
+            </td>
+          </tr>
+        }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

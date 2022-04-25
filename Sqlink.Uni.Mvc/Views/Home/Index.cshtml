@@ -1,0 +1,46 @@
+﻿@using Sqlink.Uni.BL
+@{
+    ViewData["Title"] = "Home Page";
+}
+<form id="remove" method="post"></form>
+
+
+<table>
+    <tr>
+        <td>Name</td>
+        <td>Lecturer</td>
+        <td>Action</td>
+    </tr>
+
+@foreach (Course course in Model.Courses)
+        {
+            <tr class="border text-center">
+                <td>@course.Name</td>
+                <td>@course.Lecturer</td>
+
+
+                       <td>
+              <span class="table-remove">
+                <button type="submit"
+                        name="id"
+                        value="@course.Id"
+                        form="remove"
+                        asp-page-handler="Remove"
+                        class="btn btn-danger btn-rounded btn-sm my-0">
+                  Remove
+                </button>
+              </span>
+            </td>
+
+                @*<td>
+                    <form method="post"  asp-page-handler="AddCourse" asp-route-courseId=@course.Id>
+                        <input type="submit" value="view details" class="btn btn-sm" />
+                    </form>
+                </td>*@
+            </tr>
+        }
+
+         
+</table>
+
+
