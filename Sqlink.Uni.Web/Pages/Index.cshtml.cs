@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Sqlink.Uni.BL;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sqlink.Uni.Web.Pages
 {
@@ -35,8 +36,45 @@ namespace Sqlink.Uni.Web.Pages
         public void OnPost()
         {
         }
+        //IsValidEnrollmentOperetion
+        //Model.IsValidEnrollmentOperetion(EnrollmentOperetion.AddCourse) ? null : "disabled"  
 
- 
+        public string GetOperetionDisabled(EnrollmentOperetion enrollmentOperetion)
+        {
+            var enabled = false;
+            if (Enrollment == null && enrollmentOperetion == EnrollmentOperetion.CreateRegistration)
+            {
+                enabled = true;
+            }
+            else if (Enrollment == null && enrollmentOperetion != EnrollmentOperetion.CreateRegistration)
+            {
+                enabled = false;
+            }
+            else if(!EnrollmentCourses.Any() &&  new[] { EnrollmentOperetion .ClearAllCourses, 
+                                                         EnrollmentOperetion.Complete
+                                                       }.Contains(enrollmentOperetion))
+            {
+                enabled = false;
+            }
+            else
+            {
+                enabled = enrollmentOperetion.IsValidEnrollmentOperetion(Enrollment.State);
+            }
+
+            return enabled ? null : "disabled";
+        }
+
+
+        //public bool IsValidEnrollmentOperetion(EnrollmentOperetion enrollmentOperetion )
+        //{
+        //    if (Enrollment == null && enrollmentOperetion == EnrollmentOperetion.CreateRegistration )
+        //    {
+        //        return true;
+        //    }
+        //    var isValid = enrollmentOperetion.IsValidEnrollmentOperetion(Enrollment.State);
+
+        //    return isValid;
+        //}
 
         public RedirectToPageResult OnPostRegistration()
         {
@@ -72,5 +110,6 @@ namespace Sqlink.Uni.Web.Pages
             _uniRepository.AddCourseToEenrollment(id);
             return RedirectToPage("Index");
         }
+         
     }
 }

@@ -4,6 +4,94 @@ using System.Linq;
 
 namespace Sqlink.Uni.BL
 {
+
+    public static class Ext
+    {
+
+        
+
+            public static bool IsValidEnrollmentOperetion(this EnrollmentOperetion enrollmentOperetion, EnrollmentState currentEnrollmentState)
+        {
+            var opertions = new Dictionary<EnrollmentOperetion, Func<bool>> {
+              
+                { EnrollmentOperetion.AddCourse , () => !new []{ EnrollmentState.Payed , EnrollmentState.Cancelled }.Contains(currentEnrollmentState) },
+                { EnrollmentOperetion.ClearAllCourses , () => !new []{ EnrollmentState.Payed , EnrollmentState.Cancelled }.Contains(currentEnrollmentState) },
+                { EnrollmentOperetion.Complete , () => currentEnrollmentState ==  EnrollmentState.InProgress },
+                { EnrollmentOperetion.Pay , () => currentEnrollmentState ==  EnrollmentState.Completed },
+                { EnrollmentOperetion.Cancel ,  () => new []{ EnrollmentState.InProgress , EnrollmentState.Completed }.Contains(currentEnrollmentState)},
+            };
+
+
+            var isValid = opertions.Keys.Contains(enrollmentOperetion) &&  opertions[enrollmentOperetion]();
+
+            return isValid;
+        }
+
+
+        public static bool IsValidEenrollmentState(this EnrollmentState currentEnrollmentState, EnrollmentState newEnrollmentState)
+        {
+            var states = new Dictionary<EnrollmentState, EnrollmentState[]>
+            {
+                {
+                    EnrollmentState.InProgress,
+                    new[]
+                    {
+                        EnrollmentState.Completed,
+                        EnrollmentState.Cancelled,
+                    }
+                },
+                {
+                    EnrollmentState.Completed,
+                    new[]
+                    {
+                        EnrollmentState.InProgress,
+                        EnrollmentState.Cancelled,
+                        EnrollmentState.Payed,
+                    }
+                }
+            };
+
+            var isValid = states.Keys.Contains(currentEnrollmentState) &&
+                           states[currentEnrollmentState].Any(a => a == newEnrollmentState);
+
+            return isValid;
+        }
+
+    }
+
+    public enum EnrollmentOperetion
+    {
+        CreateRegistration,
+        AddCourse,
+        ClearAllCourses,
+        Complete,
+        Pay,
+        Cancel
+    }
+
+//    a.CreateRegistration(יוצרת את האובייקט(
+//b.AddCourse(מוסיפה קורס להרשמה(
+//i.אפשרי מכל מצב חוץ מ:
+//Payed .1
+//Cancelled .2
+
+
+    //c.ClearAllCourses(מוחקת את כל הקורסים מההרשמה(
+    //i.אפשרי מכל מצב חוץ מ:
+    //Payed .1
+    //Cancelled .2
+    //d.Complete(מסיימת את ההרשמה(
+    //i.אפשרי מהמצבים הבאים:
+    //InProgress .1
+
+    //)תשלום )Pay.e
+    //i.אפשרי מהמצבים הבאים:
+    //Completed .1
+    //f.Cancel(ביטול ההרשמה(
+    //i.אפשרי מהמצבים הבאים:
+    //InProgress .1
+    //Completed .2
+
     public class UniRepository : IUniRepository
     {
         private IGenericRepository<EnrollmentDetail> _enrollmentDetailRepository;
@@ -32,12 +120,20 @@ namespace Sqlink.Uni.BL
             //}
 
             var courseIds = _enrollmentDetailRepository.GetAll()
-                                                        .Where(w =>    w.Enrollment.Id == enrollment?.Id)
+                                                        .Where(w => w.Enrollment.Id == enrollment?.Id)
                                                         .Select(s => s.Course.Id);
 
 
             var courses = _courseRepository.GetAll()
-                                            .Where(w => (!b && !courseIds.Contains(w.Id)))
+                                            .Where(w => {
+
+                                                var r = b ? courseIds.Contains(w.Id) :
+                                                     !courseIds.Contains(w.Id);
+                                                return r;
+ 
+
+
+                                            })
                                             .OrderBy(o => o.IsMandatory)
                                             .ThenBy(o => o.Year)//
                                             .ThenBy(o => o.Semester);//
@@ -59,7 +155,7 @@ namespace Sqlink.Uni.BL
             var enrollment = GetCurrentEenrollment();
             if (enrollment == null)
             {
-                throw new Exception($"enrollment not found"); //todo: print ids
+                throw new Exception($"enrollment not found"); //todo:create custom exception. print ids
             }
 
             var enrollmentDetail = new EnrollmentDetail
@@ -193,39 +289,11 @@ namespace Sqlink.Uni.BL
 //Completed → InProgress.c
 //Completed → Cancelled.d
 //Completed → Payed
-        private bool IsValidEenrollmentState(EnrollmentState currentEnrollmentState, EnrollmentState newEnrollmentState)
-        {
-            var states = new Dictionary<EnrollmentState, EnrollmentState[]>
-            {
-                {
-                    EnrollmentState.InProgress,
-                    new[] 
-                    {
-                        EnrollmentState.Completed,
-                        EnrollmentState.Cancelled,
-                    }
-                },
-                {
-                    EnrollmentState.Completed,
-                    new[] 
-                    {
-                        EnrollmentState.InProgress,
-                        EnrollmentState.Cancelled,
-                        EnrollmentState.Payed,
-                    }
-                }
-            };
-
-            var isValid = states.Keys.Contains(currentEnrollmentState) &&
-                           states[currentEnrollmentState].Any(a => a == newEnrollmentState);
-
-            return isValid;
-        }
-
+       
 
         private void UpdateEenrollmentState(Enrollment enrollment, EnrollmentState enrollmentState)
         {
-            var isValid = IsValidEenrollmentState(enrollment.State, enrollmentState);
+            var isValid =enrollment.State.IsValidEenrollmentState( enrollmentState);
             if(!isValid)
             {
                 throw new Exception($"cannot update enrollment state. currrent state = {enrollment.State} new enrollmentState ={enrollmentState}");

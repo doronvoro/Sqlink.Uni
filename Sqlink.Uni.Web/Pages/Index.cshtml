@@ -1,4 +1,5 @@
 ﻿@page
+@using Sqlink.Uni.BL
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
@@ -7,37 +8,50 @@
 
  <div class="row">
 
-    <div class="col-lg-3">
-        <span>
-      State =   @Model?.Enrollment?.State
 
-        </span>
-        <form asp-page-handler="clearAllCourses" method="post">
-            <button class="btn btn-default">Clear all courses</button>
-        </form>
-    </div>
-    <div class="col-lg-1">
+     <div >
         <form asp-page-handler="Registration" method="post">
-            <button class="btn btn-default">Registration</button>
+            <button   disabled="@(Model.GetOperetionDisabled(EnrollmentOperetion.CreateRegistration))" class="btn btn-default">Registration</button>
         </form>
     </div>
-    <div class="col-lg-1">
+      
+    <div  >
         <form asp-page-handler="completedEenrollment" method="post">
-            <button class="btn btn-default">Completed</button>
+            <button   disabled="@(Model.GetOperetionDisabled(EnrollmentOperetion.Complete))" class="btn btn-default">Completed</button>
         </form>
     </div>
-     <div class="col-lg-1">
+    <div  >
+        <form asp-page-handler="clearAllCourses" method="post">
+            <button   disabled="@(Model.GetOperetionDisabled(EnrollmentOperetion.ClearAllCourses))" class="btn btn-default">Clear all courses</button>
+        </form>
+    </div>
+  
+     <div  >
+        <form asp-page-handler="cancelEenrollment" method="post">
+            <button   disabled="@(Model.GetOperetionDisabled(EnrollmentOperetion.Cancel))" class="btn btn-default">Cancel</button>
+        </form>
+    </div>
+     <div >
         <form asp-page-handler="payEenrollment" method="post">
-            <button class="btn btn-default">Pay</button>
+            <button  disabled="@(Model.GetOperetionDisabled(EnrollmentOperetion.Pay))" class="btn btn-default">Pay</button>
         </form>
     </div>
+      @*<div >
+        <form asp-page-handler="cancelEenrollment" method="post">
+            <button class="btn btn-default">Cancel</button>
+        </form>
+    </div>*@
+    
     </div>
+     <div>
+         <br />
+      State =   @(Model?.Enrollment?.State.ToString() ?? "not registered")
 
+        </div>
        <form  id="courseForm" asp-page-handler="addCourseToEenrollment" method="post">
                 </form>
 
   <div id="table" class="table"> 
-      
       <table class="table"">
         <thead>
         <tr>
@@ -58,17 +72,15 @@
             <td >@course.Year</td>
             <td >@course.Semester</td>
             <td >@course.IsMandatory</td>
-
             <td>
-
-
                         <button type="submit"
+                         disabled="@(Model.GetOperetionDisabled(EnrollmentOperetion.AddCourse))"
                         name="id"
                         value="@course.Id"
                         form="courseForm"
                         asp-page-handler="addCourseToEenrollment"
                         class="btn btn-rounded btn-sm my-0">
-                  Remove
+                  Add
                 </button>
 
                 @* <form  id="courseForm" asp-page-handler="addCourseToEenrollment" method="post">
@@ -81,9 +93,39 @@
         }
         </tbody>
       </table>
- 
- 
+</div>
 
 
+<div>
 
+
+    </div>
+
+
+  <div id="table" class="table"> 
+      <table class="table"">
+        <thead>
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Year</th>
+          <th>Semester</th>
+          <th>mandatory</th>
+          <th> </th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var course in Model.EnrollmentCourses)
+        {
+          <tr  > 
+            <td >@course.Id</td>
+            <td >@course.Name</td>
+            <td >@course.Year</td>
+            <td >@course.Semester</td>
+            <td >@course.IsMandatory</td>
+            <td> </td>
+          </tr>
+        }
+        </tbody>
+      </table>
 </div>
