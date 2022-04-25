@@ -22,9 +22,9 @@ namespace Sqlink.Uni.BL
             _courseRepository = courseRepository;
         }
 
-        public IEnumerable<Course> GetDefaultSortedCourses()
+        public IEnumerable<Course> GetEenrollmentCourses(bool b = false)
         {
-            var enrollment = GetCurrentOpenEenrollment();
+            var enrollment = GetCurrentEenrollment();
 
             //if (enrollment == null)
             //{
@@ -37,13 +37,16 @@ namespace Sqlink.Uni.BL
 
 
             var courses = _courseRepository.GetAll()
-                                            .Where(w => !courseIds.Contains(w.Id))
+                                            .Where(w => (!b && !courseIds.Contains(w.Id)))
                                             .OrderBy(o => o.IsMandatory)
                                             .ThenBy(o => o.Year)//
                                             .ThenBy(o => o.Semester);//
 
             return courses;
         }
+
+
+       
 
         public EnrollmentDetail AddCourseToEenrollment(int courseId)
         {
@@ -53,7 +56,7 @@ namespace Sqlink.Uni.BL
                 throw new Exception($"course not found. courseId= {courseId}");
             }
 
-            var enrollment = GetCreareEenrollment();
+            var enrollment = GetCurrentEenrollment();
             if (enrollment == null)
             {
                 throw new Exception($"enrollment not found"); //todo: print ids
@@ -80,25 +83,24 @@ namespace Sqlink.Uni.BL
 
 
             _enrollmentDetailRepository.Insert(enrollmentDetail);
-
             _enrollmentDetailRepository.Save();
 
-
             return enrollmentDetail;
-
-
         }
 
         public Enrollment GetCreareEenrollment()
         {
-            var enrollment = GetCurrentOpenEenrollment();
+            var enrollment = GetCurrentEenrollment();
 
             if (enrollment != null)
             {
                 return enrollment;
             }
 
-            enrollment = new Enrollment { };
+            enrollment = new Enrollment
+            {
+                State = EnrollmentState.InProgress
+            };
 
             _enrollmentRepository.Insert(enrollment);
             _enrollmentRepository.Save();
@@ -106,19 +108,18 @@ namespace Sqlink.Uni.BL
             return enrollment;
         }
 
-        public void ClearCoursesFromEenrollment(int courseId)
+        public void ClearCoursesFromEenrollment()
         {
-            var enrollment = GetCurrentOpenEenrollment();
+            var enrollment = GetCurrentEenrollment();
 
             DeleteEenrollmentDetails(enrollment.Id);
 
-            //todo: unit of work
             _enrollmentDetailRepository.Save();
         }
 
         public void CancelEenrollment()
         {
-            var enrollment = GetCurrentOpenEenrollment();
+            var enrollment = GetCurrentEenrollment();
 
             UpdateEenrollmentState(enrollment, EnrollmentState.Cancelled);
 
@@ -132,7 +133,7 @@ namespace Sqlink.Uni.BL
 
         public void CompletedEenrollment()
         {
-            var enrollment = GetCurrentOpenEenrollment();
+            var enrollment = GetCurrentEenrollment();
 
             UpdateEenrollmentState(enrollment, EnrollmentState.Completed);
 
@@ -140,7 +141,7 @@ namespace Sqlink.Uni.BL
         }
         public void PayEenrollment()
         {
-            var enrollment = GetCurrentOpenEenrollment();
+            var enrollment = GetCurrentEenrollment();
 
             UpdateEenrollmentState(enrollment, EnrollmentState.Payed);
 
@@ -154,15 +155,19 @@ namespace Sqlink.Uni.BL
             return student;
         }
 
-        private Enrollment GetCurrentOpenEenrollment()
+        public  Enrollment GetCurrentEenrollment()
         {
 
-            var closeEnrollment = new[] { EnrollmentState.Payed, EnrollmentState.Completed };
+           // var closeEnrollment = new[] { EnrollmentState.Payed, EnrollmentState.Completed };
+
+            //var enrollment = _enrollmentRepository.GetAll()
+            //                                      .Where(w => !closeEnrollment.Contains(w.State))
+            //                                      //todo: && w.UserId == ??
+            //                                      .FirstOrDefault();
 
             var enrollment = _enrollmentRepository.GetAll()
-                                                  .Where(w => !closeEnrollment.Contains(w.State))
-                                                  //todo: && w.UserId == ??
-                                                  .FirstOrDefault();
+                                                 .FirstOrDefault();
+
 
 
             return enrollment;
@@ -183,9 +188,48 @@ namespace Sqlink.Uni.BL
 
         }
 
+//InProgress → Completed.a
+//InProgress → Cancelled.b
+//Completed → InProgress.c
+//Completed → Cancelled.d
+//Completed → Payed
+        private bool IsValidEenrollmentState(EnrollmentState currentEnrollmentState, EnrollmentState newEnrollmentState)
+        {
+            var states = new Dictionary<EnrollmentState, EnrollmentState[]>
+            {
+                {
+                    EnrollmentState.InProgress,
+                    new[] 
+                    {
+                        EnrollmentState.Completed,
+                        EnrollmentState.Cancelled,
+                    }
+                },
+                {
+                    EnrollmentState.Completed,
+                    new[] 
+                    {
+                        EnrollmentState.InProgress,
+                        EnrollmentState.Cancelled,
+                        EnrollmentState.Payed,
+                    }
+                }
+            };
+
+            var isValid = states.Keys.Contains(currentEnrollmentState) &&
+                           states[currentEnrollmentState].Any(a => a == newEnrollmentState);
+
+            return isValid;
+        }
+
 
         private void UpdateEenrollmentState(Enrollment enrollment, EnrollmentState enrollmentState)
         {
+            var isValid = IsValidEenrollmentState(enrollment.State, enrollmentState);
+            if(!isValid)
+            {
+                throw new Exception($"cannot update enrollment state. currrent state = {enrollment.State} new enrollmentState ={enrollmentState}");
+            }
 
             _enrollmentRepository.UpdateById(enrollment.Id, (e) => e.State = enrollmentState);
         }

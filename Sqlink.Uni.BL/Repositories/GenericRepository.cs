@@ -29,9 +29,15 @@ namespace Sqlink.Uni.BL
         {
             _actionList.Add(() =>
             {
-                var id = _items.Keys.Max(m => m);
-                obj.Id++; /// id++;
-                _items.TryAdd(obj.Id, obj);
+                var id = 0;// _items.Any() ? 0 : _items.Keys.Max(m => m);
+                if(_items.Any())
+                {
+                    id = _items.Keys.Max(m => m);
+                }
+                id++;
+
+                obj.Id = id;
+                _items.TryAdd(id, obj);
             });
           
         }

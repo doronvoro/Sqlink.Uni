@@ -2,17 +2,24 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Sqlink.Uni.BL;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sqlink.Uni.Web.Pages
 {
+    //[IgnoreAntiforgeryToken(Order = 1001)]
     public class IndexModel : PageModel
     {
         private readonly ILogger<IndexModel> _logger;
         private readonly IUniRepository _uniRepository;
+        
+        public Enrollment Enrollment => _uniRepository.GetCurrentEenrollment();
+
+        //public IEnumerable<Course> AllCourses => _uniRepository.GetEenrollmentCourses(false);
+
+        public IEnumerable<Course> Courses => _uniRepository.GetEenrollmentCourses(false);
+
+        public IEnumerable<Course> EnrollmentCourses => _uniRepository.GetEenrollmentCourses(true);
+
 
         public IndexModel(ILogger<IndexModel> logger, IUniRepository uniRepository)
         {
@@ -20,26 +27,50 @@ namespace Sqlink.Uni.Web.Pages
             _uniRepository = uniRepository;
         }
 
-
-        public IEnumerable<Course> Courses
+        public void OnGet()
         {
-            get
-            {
-                return _uniRepository.GetDefaultSortedCourses();
-            }
         }
 
-        //public List<Person> People => Data;
 
-        public RedirectToPageResult OnCourseAdd(int id)
+        public void OnPost()
         {
-            // People.RemoveAll(p => p.Id == id);
+        }
+
+ 
+
+        public RedirectToPageResult OnPostRegistration()
+        {
+            _uniRepository.GetCreareEenrollment();
+             return RedirectToPage("Index");
+        }
+        public RedirectToPageResult OnPostClearAllCourses()
+        {
+            _uniRepository.ClearCoursesFromEenrollment();
             return RedirectToPage("Index");
         }
 
-        public void OnGet()
+        public RedirectToPageResult OnPostCancelEenrollment()
         {
+            _uniRepository.CancelEenrollment();
+            return RedirectToPage("Index");
+        }
 
+        public RedirectToPageResult OnPostCompletedEenrollment()
+        {
+            _uniRepository.CompletedEenrollment();
+            return RedirectToPage("Index");
+        }
+
+        public RedirectToPageResult OnPostPayEenrollment()
+        {
+            _uniRepository.PayEenrollment(); // .ClearAllCourses(
+            return RedirectToPage("Index");
+        }
+
+        public RedirectToPageResult OnPostAddCourseToEenrollment(int id)
+        {
+            _uniRepository.AddCourseToEenrollment(id);
+            return RedirectToPage("Index");
         }
     }
 }

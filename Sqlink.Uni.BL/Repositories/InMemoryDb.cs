@@ -7,16 +7,14 @@ namespace Sqlink.Uni.BL
 {
     public class InMemoryDb
     {
-
         public InMemoryDb()
         {
             // todo: use Lazy<T>
             Courses = new ConcurrentDictionary<int,Course>(GetCourses());
             Enrollments = new ConcurrentDictionary<int, Enrollment>();
             EnrollmentDetails = new ConcurrentDictionary<int, EnrollmentDetail>();
-            Students = new ConcurrentDictionary<int, Student>();
+            Students = new ConcurrentDictionary<int, Student>(GetStudents());
         }
-
 
         public ConcurrentDictionary<int, T> GetConcurrentDictionary<T>() where T : BaseEntity
         {
@@ -41,6 +39,19 @@ namespace Sqlink.Uni.BL
             }
 
             throw new Exception($"{type} not found");
+
+        }
+
+        public static IEnumerable<KeyValuePair<int, Student>> GetStudents()
+        {
+            foreach (var item in Enumerable.Range(1, 1))
+            {
+                yield return new KeyValuePair<int, Student>(item, new Student
+                {
+                    Id= item,
+                    Name = "Default Student"
+                });
+            }
 
         }
 

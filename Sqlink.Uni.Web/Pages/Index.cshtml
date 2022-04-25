@@ -4,27 +4,49 @@
     ViewData["Title"] = "Home page";
 }
 
-<!-- Editable table -->
-<div class="card">
-  <h3 class="card-header text-center font-weight-bold text-uppercase py-2">Available courses</h3>
-  <div class="card-body">
-    <!-- The form that remove buttons will use -->
-    <form id="courseForm" method="post"></form>
 
-    <div id="table" class="table-editable">
-      <span class="table-add float-right mb-3 mr-2">
-        <a href="#!" class="text-success">
-          <i
-            class="fas fa-plus fa-2x" aria-hidden="true"></i></a></span>
-      <table class="table table-bordered table-responsive-md table-striped text-center">
+ <div class="row">
+
+    <div class="col-lg-3">
+        <span>
+      State =   @Model?.Enrollment?.State
+
+        </span>
+        <form asp-page-handler="clearAllCourses" method="post">
+            <button class="btn btn-default">Clear all courses</button>
+        </form>
+    </div>
+    <div class="col-lg-1">
+        <form asp-page-handler="Registration" method="post">
+            <button class="btn btn-default">Registration</button>
+        </form>
+    </div>
+    <div class="col-lg-1">
+        <form asp-page-handler="completedEenrollment" method="post">
+            <button class="btn btn-default">Completed</button>
+        </form>
+    </div>
+     <div class="col-lg-1">
+        <form asp-page-handler="payEenrollment" method="post">
+            <button class="btn btn-default">Pay</button>
+        </form>
+    </div>
+    </div>
+
+       <form  id="courseForm" asp-page-handler="addCourseToEenrollment" method="post">
+                </form>
+
+  <div id="table" class="table"> 
+      
+      <table class="table"">
         <thead>
         <tr>
-          <th class="text-center">Id</th>
-          <th class="text-center">Name</th>
-          <th class="text-center">Year</th>
-          <th class="text-center">Semester</th>
-          <th class="text-center">mandatory</th>
-          <th class="text-center"> </th>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Year</th>
+          <th>Semester</th>
+          <th>mandatory</th>
+          <th> </th>
         </tr>
         </thead>
         <tbody>
@@ -38,21 +60,30 @@
             <td >@course.IsMandatory</td>
 
             <td>
-              <span class="table-remove">
-                <button type="submit"
+
+
+                        <button type="submit"
                         name="id"
                         value="@course.Id"
                         form="courseForm"
-                        asp-page-handler="OnCourseAdd"
-                        class="btn btn-danger btn-rounded btn-sm my-0">
-                  Add
+                        asp-page-handler="addCourseToEenrollment"
+                        class="btn btn-rounded btn-sm my-0">
+                  Remove
                 </button>
-              </span>
+
+                @* <form  id="courseForm" asp-page-handler="addCourseToEenrollment" method="post">
+                     <input type="hidden" name="id" value="@course.Id" />
+                       <button  class="btn btn-default"   >Add</button>
+                </form>*@
+ 
             </td>
           </tr>
         }
         </tbody>
       </table>
-    </div>
-  </div>
+ 
+ 
+
+
+
 </div>
