@@ -23,7 +23,11 @@ namespace Sqlink.Uni.BL
             _courseRepository = courseRepositoryFactory.GetRepository();
         }
 
-        public IEnumerable<Course> GetEenrollmentCourses(bool b = false)
+
+
+        
+
+        public IEnumerable<Course> GetCourses(bool onlyEenrollmentCourses = false)
         {
             var enrollment = GetCurrentEenrollment();
 
@@ -33,8 +37,8 @@ namespace Sqlink.Uni.BL
 
             var courses = _courseRepository.GetAll()
                                             .Where(w => {
-                                                var r = b ? courseIds.Contains(w.Id) :
-                                                            !courseIds.Contains(w.Id);
+                                                var r = onlyEenrollmentCourses ? courseIds.Contains(w.Id) :
+                                                                                !courseIds.Contains(w.Id);
                                                 return r;
                                             })
                                             .OrderByDescending(o => o.IsMandatory)

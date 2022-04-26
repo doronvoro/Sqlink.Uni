@@ -14,15 +14,11 @@ namespace Sqlink.Uni.Web.Pages
         private readonly IUniRepository _uniRepository;
         
         public Enrollment Enrollment => _uniRepository.GetCurrentEenrollment();
+        public IEnumerable<Course> Courses => _uniRepository.GetCourses(false);
+        public IEnumerable<Course> EnrollmentCourses => _uniRepository.GetCourses(true);
 
-        //public IEnumerable<Course> AllCourses => _uniRepository.GetEenrollmentCourses(false);
-
-        public IEnumerable<Course> Courses => _uniRepository.GetEenrollmentCourses(false);
-
-        public IEnumerable<Course> EnrollmentCourses => _uniRepository.GetEenrollmentCourses(true);
-
-        [BindProperty] 
-        public string AlertMessaage { get; set; } = "sdfghjklkjhg";
+        [TempData] 
+        public string AlertMessaage { get; set; } 
 
         public IndexModel(ILogger<IndexModel> logger, IUniRepository uniRepository)
         {
@@ -38,13 +34,40 @@ namespace Sqlink.Uni.Web.Pages
         public void OnPost()
         {
         }
-        //IsValidEnrollmentOperetion
-        //Model.IsValidEnrollmentOperetion(EnrollmentOperetion.AddCourse) ? null : "disabled"  
+        
+        public RedirectToPageResult OnPostRegistration()
+        {
+            _uniRepository.GetCreareEenrollment();
+             return RedirectToPage("Index");
+        }
+        public RedirectToPageResult OnPostClearAllCourses()
+        {
+            _uniRepository.ClearCoursesFromEenrollment();
+            return RedirectToPage("Index");
+        }
+        public RedirectToPageResult OnPostCancelEenrollment()
+        {
+            _uniRepository.CancelEenrollment();
+            return RedirectToPage("Index");
+        }
+        public RedirectToPageResult OnPostCompletedEenrollment()
+        {
+            _uniRepository.CompletedEenrollment();
+            return RedirectToPage("Index");
+        }
+        public RedirectToPageResult OnPostPayEenrollment()
+        {
+            _uniRepository.PayEenrollment(); // .ClearAllCourses(
+            return RedirectToPage("Index");
+        }
+        public RedirectToPageResult OnPostAddCourseToEenrollment(int id)
+        {
+            _uniRepository.AddCourseToEenrollment(id ,out string message);
 
+            AlertMessaage = message;
 
-
-       
-
+            return RedirectToPage("Index");
+        }
         public string GetOperetionDisabled(EnrollmentOperetion enrollmentOperetion)
         {
             var enabled = false;
@@ -56,7 +79,7 @@ namespace Sqlink.Uni.Web.Pages
             {
                 enabled = false;
             }
-            else if(!EnrollmentCourses.Any() &&  new[] { EnrollmentOperetion .ClearAllCourses, 
+            else if (!EnrollmentCourses.Any() && new[] { EnrollmentOperetion .ClearAllCourses,
                                                          EnrollmentOperetion.Complete
                                                        }.Contains(enrollmentOperetion))
             {
@@ -69,56 +92,5 @@ namespace Sqlink.Uni.Web.Pages
 
             return enabled ? null : "disabled";
         }
-
-
-        //public bool IsValidEnrollmentOperetion(EnrollmentOperetion enrollmentOperetion )
-        //{
-        //    if (Enrollment == null && enrollmentOperetion == EnrollmentOperetion.CreateRegistration )
-        //    {
-        //        return true;
-        //    }
-        //    var isValid = enrollmentOperetion.IsValidEnrollmentOperetion(Enrollment.State);
-
-        //    return isValid;
-        //}
-
-        public RedirectToPageResult OnPostRegistration()
-        {
-            _uniRepository.GetCreareEenrollment();
-             return RedirectToPage("Index");
-        }
-        public RedirectToPageResult OnPostClearAllCourses()
-        {
-            _uniRepository.ClearCoursesFromEenrollment();
-            return RedirectToPage("Index");
-        }
-
-        public RedirectToPageResult OnPostCancelEenrollment()
-        {
-            _uniRepository.CancelEenrollment();
-            return RedirectToPage("Index");
-        }
-
-        public RedirectToPageResult OnPostCompletedEenrollment()
-        {
-            _uniRepository.CompletedEenrollment();
-            return RedirectToPage("Index");
-        }
-
-        public RedirectToPageResult OnPostPayEenrollment()
-        {
-            _uniRepository.PayEenrollment(); // .ClearAllCourses(
-            return RedirectToPage("Index");
-        }
-
-        public RedirectToPageResult OnPostAddCourseToEenrollment(int id)
-        {
-            _uniRepository.AddCourseToEenrollment(id ,out string message);
-
-            AlertMessaage = message;
-
-            return RedirectToPage("Index");
-        }
-         
     }
 }
