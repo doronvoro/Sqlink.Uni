@@ -21,6 +21,8 @@ namespace Sqlink.Uni.Web.Pages
 
         public IEnumerable<Course> EnrollmentCourses => _uniRepository.GetEenrollmentCourses(true);
 
+        [BindProperty] 
+        public string AlertMessaage { get; set; } = "sdfghjklkjhg";
 
         public IndexModel(ILogger<IndexModel> logger, IUniRepository uniRepository)
         {
@@ -38,6 +40,10 @@ namespace Sqlink.Uni.Web.Pages
         }
         //IsValidEnrollmentOperetion
         //Model.IsValidEnrollmentOperetion(EnrollmentOperetion.AddCourse) ? null : "disabled"  
+
+
+
+       
 
         public string GetOperetionDisabled(EnrollmentOperetion enrollmentOperetion)
         {
@@ -107,7 +113,10 @@ namespace Sqlink.Uni.Web.Pages
 
         public RedirectToPageResult OnPostAddCourseToEenrollment(int id)
         {
-            _uniRepository.AddCourseToEenrollment(id);
+            _uniRepository.AddCourseToEenrollment(id ,out string message);
+
+            AlertMessaage = message;
+
             return RedirectToPage("Index");
         }
          

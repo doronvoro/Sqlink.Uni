@@ -6,7 +6,20 @@ namespace Sqlink.Uni.BL
 {
     public static class ExtensionMethods
     {
-            public static bool IsValidEnrollmentOperetion(this EnrollmentOperetion enrollmentOperetion, EnrollmentState currentEnrollmentState)
+
+        // public string TocourceTime(EnrollmentOperetion enrollmentOperetion)
+        //{
+        //    @($"{@course.StartTime.DayOfWeek} {@course.StartTime.ToString("HH:mm")} - {@course.EndTime.ToString("HH:mm")}" )
+
+        //}
+
+        public static string CourseRangeTime(this Course  course)
+        {
+            var time = $"{@course.StartTime.DayOfWeek} {@course.StartTime:HH:mm} - {@course.EndTime:HH:mm}";
+            return time;
+        }
+
+    public static bool IsValidEnrollmentOperetion(this EnrollmentOperetion enrollmentOperetion, EnrollmentState currentEnrollmentState)
         {
             var opertions = new Dictionary<EnrollmentOperetion, Func<bool>> {
               

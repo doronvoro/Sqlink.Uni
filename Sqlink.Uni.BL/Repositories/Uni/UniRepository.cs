@@ -27,35 +27,26 @@ namespace Sqlink.Uni.BL
         {
             var enrollment = GetCurrentEenrollment();
 
-             
-
             var courseIds = _enrollmentDetailRepository.GetAll()
                                                         .Where(w => w.Enrollment.Id == enrollment?.Id)
                                                         .Select(s => s.Course.Id);
 
-
             var courses = _courseRepository.GetAll()
                                             .Where(w => {
-
                                                 var r = b ? courseIds.Contains(w.Id) :
-                                                     !courseIds.Contains(w.Id);
+                                                            !courseIds.Contains(w.Id);
                                                 return r;
- 
-
-
                                             })
-                                            .OrderBy(o => o.IsMandatory)
+                                            .OrderByDescending(o => o.IsMandatory)
                                             .ThenBy(o => o.Year)//
                                             .ThenBy(o => o.Semester);//
 
             return courses;
         }
-
-
-       
-
-        public EnrollmentDetail AddCourseToEenrollment(int courseId)
+        public void AddCourseToEenrollment(int courseId, out string message) //todo: return result with message
         {
+            message = string.Empty;
+
             var course = _courseRepository.GetById(courseId);
             if (course == null)
             {
@@ -75,25 +66,27 @@ namespace Sqlink.Uni.BL
                 Student = GetStudentByCurrentUser()
             };
 
-            //todo: check course time..
-            var existsEnrollment = _enrollmentDetailRepository.GetAll()
-                                       .Where(w => w.Course.Id == enrollmentDetail.Course.Id &&
-                                                   w.Enrollment.Id == enrollmentDetail.Enrollment.Id &&
-                                                   w.Student.Id == enrollmentDetail.Student.Id)
-                                       .FirstOrDefault();
+            var query = _enrollmentDetailRepository.GetAll()
+                                                   .Where(w => w.Enrollment.Id == enrollmentDetail.Enrollment.Id);
+                                                   
+
+            var existsEnrollment = query.FirstOrDefault(f => f.Course.Id == enrollmentDetail.Course.Id);
 
             if (existsEnrollment != null)
             {
                 throw new Exception($"EnrollmentDetail already exists "); //todo: print ids
             }
 
+            var hasSameTime = query.Any(a => a.Course.StartTime <= course.StartTime && a.Course.EndTime >= course.StartTime ||
+                                             a.Course.StartTime <= course.EndTime && a.Course.EndTime >= course.EndTime);
+
+
+            message = hasSameTime ? "You have already registered for the course with those hours" : string.Empty;
 
             _enrollmentDetailRepository.Insert(enrollmentDetail);
             _enrollmentDetailRepository.Save();
 
-            return enrollmentDetail;
         }
-
         public Enrollment GetCreareEenrollment()
         {
             var enrollment = GetCurrentEenrollment();
@@ -113,7 +106,6 @@ namespace Sqlink.Uni.BL
 
             return enrollment;
         }
-
         public void ClearCoursesFromEenrollment()
         {
             var enrollment = GetCurrentEenrollment();
@@ -122,7 +114,6 @@ namespace Sqlink.Uni.BL
 
             _enrollmentDetailRepository.Save();
         }
-
         public void CancelEenrollment()
         {
             var enrollment = GetCurrentEenrollment();
@@ -135,8 +126,6 @@ namespace Sqlink.Uni.BL
             _enrollmentRepository.Save();
             _enrollmentDetailRepository.Save();
         }
-
-
         public void CompletedEenrollment()
         {
             var enrollment = GetCurrentEenrollment();
@@ -160,7 +149,6 @@ namespace Sqlink.Uni.BL
             var student = _studentRepository.GetAll().FirstOrDefault();
             return student;
         }
-
         public  Enrollment GetCurrentEenrollment()
         {
 
@@ -179,7 +167,6 @@ namespace Sqlink.Uni.BL
             return enrollment;
         }
 
-
         private void DeleteEenrollmentDetails(int enrollmentId)
         {
 
@@ -194,13 +181,6 @@ namespace Sqlink.Uni.BL
 
         }
 
-//InProgress → Completed.a
-//InProgress → Cancelled.b
-//Completed → InProgress.c
-//Completed → Cancelled.d
-//Completed → Payed
-       
-
         private void UpdateEenrollmentState(Enrollment enrollment, EnrollmentState enrollmentState)
         {
             var isValid =enrollment.State.IsValidEenrollmentState( enrollmentState);
@@ -211,9 +191,6 @@ namespace Sqlink.Uni.BL
 
             _enrollmentRepository.UpdateById(enrollment.Id, (e) => e.State = enrollmentState);
         }
-      
-
-    
 
     }
 

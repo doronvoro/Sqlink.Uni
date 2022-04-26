@@ -58,8 +58,12 @@ namespace Sqlink.Uni.BL
         public static IEnumerable<KeyValuePair<int, Course>> GetCourses()
         {
             var rnd = new Random();
+
             foreach (var item in Enumerable.Range(1, 8))
             {
+                var startTime = rnd.Next(8, 18);
+                var day = rnd.Next((int)DayOfWeek.Sunday, (int)DayOfWeek.Thursday) + 1;
+
                 yield return new KeyValuePair<int, Course>(item, new Course
                 {
                     Lecturer = $"Lecturer {item}",
@@ -67,7 +71,10 @@ namespace Sqlink.Uni.BL
                     Id = item,
                     Semester = (SemesterName)rnd.Next(1, 3),
                     Year = (CourseYear)rnd.Next(1, 3),
-                    IsMandatory = rnd.Next(0,1) == 1  
+                    IsMandatory = rnd.Next(0,100) > 50  ,
+                    StartTime = new DateTime(DateTime.Now.Year, 1, day, startTime, 0, 0),
+                    EndTime = new DateTime(DateTime.Now.Year, 1, day, (startTime + 2), 0, 0),
+
                 });
             }
 

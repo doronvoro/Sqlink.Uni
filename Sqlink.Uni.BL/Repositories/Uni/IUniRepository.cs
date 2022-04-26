@@ -7,7 +7,7 @@ namespace Sqlink.Uni.BL
         public IEnumerable<Course> GetEenrollmentCourses(bool b = false);
         public Enrollment GetCurrentEenrollment();
         Enrollment GetCreareEenrollment();
-        EnrollmentDetail AddCourseToEenrollment(int courseId);
+        public void AddCourseToEenrollment(int courseId, out string message); //todo: return result with message
         void ClearCoursesFromEenrollment();
         void CancelEenrollment();
         void CompletedEenrollment();

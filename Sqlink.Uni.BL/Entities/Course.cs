@@ -10,6 +10,9 @@ namespace Sqlink.Uni.BL
         public string Lecturer { get; set; }
         public CourseYear Year { get; set; }
         public SemesterName Semester { get; set; }
+        public LessonType LessonType { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public bool IsMandatory { get; set; }
 
     }
