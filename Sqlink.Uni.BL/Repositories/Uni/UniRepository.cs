@@ -153,9 +153,11 @@ namespace Sqlink.Uni.BL
             var student = _studentRepository.GetAll().FirstOrDefault();
             return student;
         }
+
+        
         public  Enrollment GetCurrentEenrollment()
         {
-
+            
            // var closeEnrollment = new[] { EnrollmentState.Payed, EnrollmentState.Completed };
 
             //var enrollment = _enrollmentRepository.GetAll()
@@ -164,8 +166,7 @@ namespace Sqlink.Uni.BL
             //                                      .FirstOrDefault();
 
             var enrollment = _enrollmentRepository.GetAll()
-                                                 .FirstOrDefault();
-
+                                                 .FirstOrDefault(); //  only one enrollment for demo
 
 
             return enrollment;
