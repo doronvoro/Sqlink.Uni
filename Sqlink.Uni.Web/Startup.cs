@@ -12,6 +12,8 @@ using Sqlink.Uni.BL;
 
 namespace Sqlink.Uni.Web
 {
+     
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -24,12 +26,14 @@ namespace Sqlink.Uni.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
-            services.AddTransient(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            services.Configure<RepositoryStorageOptions>(
+                         Configuration.GetSection(RepositoryStorageOptions.SectionName));
+
+            services.AddTransient(typeof(IGenericRepository<>), typeof(InMemoryRepository<>));
+            services.AddTransient(typeof(IGenericRepository<>), typeof(EFRepository<>));
+            services.AddTransient(typeof(IGenericRepositoryFactory<>), typeof(GenericRepositoryFactory<>));
             services.AddTransient<IUniRepository, UniRepository>();
-
-            
             services.AddSingleton<InMemoryDb>();
 
             services.AddRazorPages();

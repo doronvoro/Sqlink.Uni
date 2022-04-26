@@ -5,12 +5,12 @@ using System.Linq;
 
 namespace Sqlink.Uni.BL
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
+    public class InMemoryRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
         private ConcurrentDictionary<int, T> _items;
         private List<Action> _actionList;
 
-        public GenericRepository(InMemoryDb inMemoryDb)
+        public InMemoryRepository(InMemoryDb inMemoryDb)
         {
             _items = inMemoryDb.GetConcurrentDictionary<T>();
             _actionList = new List<Action>();
@@ -68,6 +68,4 @@ namespace Sqlink.Uni.BL
             });
         }
     }
-
-
 }

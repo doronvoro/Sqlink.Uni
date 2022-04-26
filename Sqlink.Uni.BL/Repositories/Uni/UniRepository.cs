@@ -3,95 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Sqlink.Uni.BL
-{
-
-    public static class Ext
-    {
-
-        
-
-            public static bool IsValidEnrollmentOperetion(this EnrollmentOperetion enrollmentOperetion, EnrollmentState currentEnrollmentState)
-        {
-            var opertions = new Dictionary<EnrollmentOperetion, Func<bool>> {
-              
-                { EnrollmentOperetion.AddCourse , () => !new []{ EnrollmentState.Payed , EnrollmentState.Cancelled }.Contains(currentEnrollmentState) },
-                { EnrollmentOperetion.ClearAllCourses , () => !new []{ EnrollmentState.Payed , EnrollmentState.Cancelled }.Contains(currentEnrollmentState) },
-                { EnrollmentOperetion.Complete , () => currentEnrollmentState ==  EnrollmentState.InProgress },
-                { EnrollmentOperetion.Pay , () => currentEnrollmentState ==  EnrollmentState.Completed },
-                { EnrollmentOperetion.Cancel ,  () => new []{ EnrollmentState.InProgress , EnrollmentState.Completed }.Contains(currentEnrollmentState)},
-            };
-
-
-            var isValid = opertions.Keys.Contains(enrollmentOperetion) &&  opertions[enrollmentOperetion]();
-
-            return isValid;
-        }
-
-
-        public static bool IsValidEenrollmentState(this EnrollmentState currentEnrollmentState, EnrollmentState newEnrollmentState)
-        {
-            var states = new Dictionary<EnrollmentState, EnrollmentState[]>
-            {
-                {
-                    EnrollmentState.InProgress,
-                    new[]
-                    {
-                        EnrollmentState.Completed,
-                        EnrollmentState.Cancelled,
-                    }
-                },
-                {
-                    EnrollmentState.Completed,
-                    new[]
-                    {
-                        EnrollmentState.InProgress,
-                        EnrollmentState.Cancelled,
-                        EnrollmentState.Payed,
-                    }
-                }
-            };
-
-            var isValid = states.Keys.Contains(currentEnrollmentState) &&
-                           states[currentEnrollmentState].Any(a => a == newEnrollmentState);
-
-            return isValid;
-        }
-
-    }
-
-    public enum EnrollmentOperetion
-    {
-        CreateRegistration,
-        AddCourse,
-        ClearAllCourses,
-        Complete,
-        Pay,
-        Cancel
-    }
-
-//    a.CreateRegistration(יוצרת את האובייקט(
-//b.AddCourse(מוסיפה קורס להרשמה(
-//i.אפשרי מכל מצב חוץ מ:
-//Payed .1
-//Cancelled .2
-
-
-    //c.ClearAllCourses(מוחקת את כל הקורסים מההרשמה(
-    //i.אפשרי מכל מצב חוץ מ:
-    //Payed .1
-    //Cancelled .2
-    //d.Complete(מסיימת את ההרשמה(
-    //i.אפשרי מהמצבים הבאים:
-    //InProgress .1
-
-    //)תשלום )Pay.e
-    //i.אפשרי מהמצבים הבאים:
-    //Completed .1
-    //f.Cancel(ביטול ההרשמה(
-    //i.אפשרי מהמצבים הבאים:
-    //InProgress .1
-    //Completed .2
-
+{ 
     public class UniRepository : IUniRepository
     {
         private IGenericRepository<EnrollmentDetail> _enrollmentDetailRepository;
@@ -99,25 +11,23 @@ namespace Sqlink.Uni.BL
         private IGenericRepository<Student> _studentRepository;
         private IGenericRepository<Course> _courseRepository;
 
-        public UniRepository(IGenericRepository<EnrollmentDetail> enrollmentDetailRepository,
-                             IGenericRepository<Enrollment> enrollmentRepository,
-                             IGenericRepository<Student> studentRepository,
-                             IGenericRepository<Course> courseRepository)
+        public UniRepository(IGenericRepositoryFactory<EnrollmentDetail> enrollmentDetailRepositoryFactory,
+                             IGenericRepositoryFactory<Enrollment> enrollmentRepositoryFactory,
+                             IGenericRepositoryFactory<Student> studentRepositoryFactory,
+                             IGenericRepositoryFactory<Course> courseRepositoryFactory,
+                             IGenericRepositoryFactory<Enrollment> genericRepositoryFactory )
         {
-            _enrollmentDetailRepository = enrollmentDetailRepository;
-            _enrollmentRepository = enrollmentRepository;
-            _studentRepository = studentRepository;
-            _courseRepository = courseRepository;
+            _enrollmentDetailRepository = enrollmentDetailRepositoryFactory.GetRepository();
+            _enrollmentRepository = enrollmentRepositoryFactory.GetRepository();
+            _studentRepository = studentRepositoryFactory.GetRepository();
+            _courseRepository = courseRepositoryFactory.GetRepository();
         }
 
         public IEnumerable<Course> GetEenrollmentCourses(bool b = false)
         {
             var enrollment = GetCurrentEenrollment();
 
-            //if (enrollment == null)
-            //{
-            //    throw new Exception($"current enrollment not found"); //todo: print userid
-            //}
+             
 
             var courseIds = _enrollmentDetailRepository.GetAll()
                                                         .Where(w => w.Enrollment.Id == enrollment?.Id)
